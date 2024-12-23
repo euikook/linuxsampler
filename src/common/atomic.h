@@ -1214,6 +1214,24 @@ static __inline__ void atomic_dec(atomic_t *v)
 	v->counter--;
 }
 
+static __inline__ void atomic_add(int i, atomic_t *v)
+{
+	int count;
+	for(count = 1; count <= i; ++count)
+    	{
+		v->counter++;
+    	}
+}
+
+static __inline__ void atomic_sub(int i, atomic_t *v)
+{
+	int count;
+	for(count = 1; count <= i; ++count)
+    	{
+		v->counter--;
+    	}
+}
+
 static __inline__ int atomic_dec_and_test(atomic_t *v)
 {
 	int res;
