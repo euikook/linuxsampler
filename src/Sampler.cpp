@@ -256,8 +256,10 @@ namespace LinuxSampler {
         // (host plugins like VST, AU, LV2, DSSI)
         for (int i = 0; i < vMidiPorts.size(); ++i) {
             if (vMidiPorts[i] == pNewPort) continue;
+#if 0
             if (!vMidiPorts[i]->GetDevice()->isAutonomousDevice())
                 throw Exception("The MIDI input port '" + vMidiPorts[i]->GetDevice()->Driver() + "' cannot be altered on this sampler channel!");
+#endif
         }
 
         if (pEngineChannel) {

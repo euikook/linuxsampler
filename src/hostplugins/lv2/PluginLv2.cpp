@@ -76,10 +76,13 @@ namespace {
 
     void PluginLv2::ConnectPort(uint32_t Port, void* DataLocation) {
         if (Port == 0) {
-            MidiBuf = static_cast<LV2_Atom_Sequence*>(DataLocation);
+            MidiBuf[0] = static_cast<LV2_Atom_Sequence*>(DataLocation);
         } else if (Port < CHANNELS + 1) {
             Out[Port - 1] = static_cast<float*>(DataLocation);
-        }
+        } else if ( Port == 33) {
+            MidiBuf[1] = static_cast<LV2_Atom_Sequence*>(DataLocation);
+
+	}
     }
 
     void PluginLv2::Activate() {
@@ -89,24 +92,30 @@ namespace {
     void PluginLv2::Run(uint32_t SampleCount) {
         int samplePos = 0;
 
-        LV2_Atom_Event* ev = lv2_atom_sequence_begin(&MidiBuf->body);
+        LV2_Atom_Event* ev[2];
+       
+	ev[0] = lv2_atom_sequence_begin(&MidiBuf[0]->body);
+	ev[1] = lv2_atom_sequence_begin(&MidiBuf[1]->body);
 
         while (SampleCount) {
             int samples = std::min(SampleCount, 128U);
 
-            for ( ; !lv2_atom_sequence_is_end(&MidiBuf->body,
-                                              MidiBuf->atom.size, ev) ;
-                  ev = lv2_atom_sequence_next(ev)) {
-                if (ev->body.type == MidiEventType) {
+	    for (int i = 0; i < 2; i++) {
 
-                    int time = ev->time.frames - samplePos;
-                    if (time >= samples) break;
+		    for ( ; !lv2_atom_sequence_is_end(&MidiBuf[i]->body,
+					    MidiBuf[i]->atom.size, ev[i]) ;
+				    ev[i] = lv2_atom_sequence_next(ev[i])) {
+			    if (ev[i]->body.type == MidiEventType) {
 
-                    uint8_t* data = reinterpret_cast<uint8_t*>(ev + 1);
+				    int time = ev[i]->time.frames - samplePos;
+				    if (time >= samples) break;
 
-                    pMidiDevice->Port()->DispatchRaw(data, time);
-                }
-            }
+				    uint8_t* data = reinterpret_cast<uint8_t*>(ev[i] + 1);
+
+				    pMidiDevice->Port(i)->DispatchRaw(data, time);
+			    }
+		    }
+	    }
             for (int i = 0 ; i < CHANNELS ; i++) {
                 pAudioDevice->Channel(i)->SetBuffer(Out[i] + samplePos);
             }

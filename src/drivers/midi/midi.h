@@ -60,7 +60,8 @@ namespace LinuxSampler {
         uint8_t midi_prog;     ///< MIDI program index
 
         bool operator< (const midi_prog_index_t& other) const {
-            return memcmp(this, &other, sizeof(midi_prog_index_t)) < 0;
+            // return memcmp(this, &other, sizeof(midi_prog_index_t)) < 0;
+            return memcmp(this, &other, 3) < 0;
         }
     };
 

@@ -45,7 +45,6 @@ namespace LinuxSampler {
 
 // *************** MidiInputDevicePlugin ***************
 // *
-
     MidiInputDevicePlugin::MidiInputDevicePlugin(std::map<String, DeviceCreationParameter*> Parameters,
                                                  void* pSampler) :
         MidiInputDevice(Parameters, pSampler) {
@@ -90,6 +89,11 @@ namespace LinuxSampler {
     void MidiInputDevicePlugin::AddMidiPort() {
         static_cast<ParameterPortsPlugin*>(
             Parameters["PORTS"])->ForceSetValue((int)Ports.size() + 1);
+    }
+
+
+    MidiInputPort* MidiInputDevicePlugin::Port(int port) {
+	return port < Ports.size() ? Ports[port] : Ports[0];
     }
 
     void MidiInputDevicePlugin::RemoveMidiPort(MidiInputPort* pPort) {

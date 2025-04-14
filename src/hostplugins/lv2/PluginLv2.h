@@ -57,7 +57,7 @@ namespace {
         void SetStateFeatures(const LV2_Feature* const* Features);
 
         float** Out;
-        LV2_Atom_Sequence* MidiBuf;
+        LV2_Atom_Sequence* MidiBuf[2];
         LV2_URID_Map* UriMap;
         LV2_URID MidiEventType;
         LV2_State_Map_Path* MapPath;

@@ -401,22 +401,54 @@ namespace LinuxSampler {
         uint8_t lb = (Program >> 8) & 0xff;
         uint8_t pc = Program & 0x7f;
 
-        dmsg(1,("Received MIDI program change (msb=%d) (lsb=%d) (prog=%d)\n", hb ,lb, pc));
+        dmsg(1,("Received Channel(%d) MIDI program change (msb=%d) (lsb=%d) (prog=%d)\n", this->MidiChannel(),hb ,lb, pc));
         std::vector<int> maps = MidiInstrumentMapper::Maps();
-        if (maps.empty()) return;
+        if (maps.empty()) {
+            dmsg(1,("MAPS empty\n"));
+            return;
+        }
 
-        if (UsesNoMidiInstrumentMap()) return;
+        if (UsesNoMidiInstrumentMap()) {
+            dmsg(1,("UsesNoMidiInstrumentMap\n"));
+            return;
+        }
         if (MidiInstrumentMapper::GetMapCount() == 0) return;
         // retrieve the MIDI instrument map this engine channel is assigned to
+
+        
+
         int iMapID = (UsesDefaultMidiInstrumentMap())
             ? MidiInstrumentMapper::GetDefaultMap() /*default*/ : GetMidiInstrumentMap();
         // is there an entry for this MIDI bank&prog pair in that map?
+
         midi_prog_index_t midiIndex;
         midiIndex.midi_bank_msb = hb;
         midiIndex.midi_bank_lsb = lb;
         midiIndex.midi_prog     = pc;
+
         optional<MidiInstrumentMapper::entry_t> mapping =
             MidiInstrumentMapper::GetEntry(iMapID, midiIndex);
+
+        
+        if (!mapping) {
+
+            if (midiIndex.midi_bank_msb) {
+                midiIndex.midi_bank_msb = 0;
+            }
+
+            mapping =
+            MidiInstrumentMapper::GetEntry(iMapID, midiIndex);
+        }
+
+        if (!mapping) {
+                if (midiIndex.midi_bank_lsb) {
+                    midiIndex.midi_bank_lsb = 0;
+                }
+
+                mapping =
+                MidiInstrumentMapper::GetEntry(iMapID, midiIndex);
+        }
+
         if (mapping) { // if mapping exists ...
             InstrumentManager::instrument_id_t id;
             id.FileName = mapping->InstrumentFile;
@@ -424,6 +456,8 @@ namespace LinuxSampler {
             //TODO: we should switch the engine type here
             InstrumentManager::LoadInstrumentInBackground(id, this);
             Volume(mapping->Volume);
+        } else {
+             dmsg(1,("mapping not exists\n"));
         }
     }
 

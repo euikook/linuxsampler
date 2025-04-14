@@ -75,9 +75,13 @@ namespace LinuxSampler {
          *
          * @returns MIDI port
          */
+#if 0
         MidiInputPort* Port() {
             return Ports[0];
         }
+#else
+        MidiInputPort* Port(int port);
+#endif
 
         void AddMidiPort();
         void RemoveMidiPort(MidiInputPort* pPort);
